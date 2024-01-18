@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">BacklogEditor</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
+
+    <!-- description of the widget -->
+    <string name="app_widget_description">BacklogEditor widget</string>
+
+    <!-- title of the settings when add new project -->
+    <string name="title_activity_settings">SettingsActivity</string>
+
+    <!-- Preference Titles -->
+    <string name="project_preference_header">Choose Project</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="token_title">Personal Access Token</string>
+    <string name="project_title">Project</string>
+    <string name="project_default_value_syncing">Syncing…</string>
+    <string name="project_default_value_not_selected">Not selected</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+</resources>

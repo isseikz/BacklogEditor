@@ -1,0 +1,35 @@
+query GetProjects($owner: String!, $projects: Int!, $items: Int!)
+{
+    user(login: $owner){
+        recentProjects(first: $projects) {
+            nodes {
+                ... on ProjectV2{
+                    title
+                    shortDescription
+                    readme
+                    id
+                    items(first: $items) {
+                        nodes {
+                            ... on ProjectV2Item {
+                                id
+                                content {
+                                    ... on DraftIssue {
+                                        title
+                                    }
+                                    ... on Issue {
+                                        title
+                                        closed
+                                    }
+                                    ... on PullRequest {
+                                        title
+                                        closed
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
