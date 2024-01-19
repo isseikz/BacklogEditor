@@ -2,6 +2,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
+    android:background="?attr/colorOnPrimarySurface"
     android:orientation="vertical"
     android:padding="16dp">
 
@@ -9,37 +12,39 @@
         android:id="@+id/project_item_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:text="Project Name"
-        android:textColor="@color/colorText"
-        android:textSize="18sp"
-        android:layout_marginBottom="8dp" />
+        android:textColor="?attr/colorOnPrimaryContainer"
+        android:textSize="18sp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:text="Description"
-        android:textColor="@color/colorText"
-        android:textSize="18sp"
-        android:layout_marginBottom="8dp" />
+        android:textColor="?attr/colorOnPrimaryContainer"
+        android:textSize="18sp" />
 
     <EditText
         android:id="@+id/editTextNewItem"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Write your idea here..."
+        android:layout_marginBottom="16dp"
+        android:hint="@string/dialog_add_item_edit_text"
+        android:importantForAutofill="no"
         android:inputType="text"
-        android:textColor="@color/colorText"
-        android:textSize="18sp"
-        android:padding="8dp"
-        android:layout_marginBottom="16dp" />
+        android:padding="16dp"
+        android:textColor="?attr/colorOnPrimaryContainer"
+        android:textColorHint="?attr/colorOnPrimaryFixedVariant"
+        android:textSize="18sp" />
 
-    <Button
+    <ImageButton
         android:id="@+id/buttonSubmit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:text="Submit"
-        android:textColor="@color/colorText"
-        android:textSize="18sp"
-        android:padding="8dp" />
+        android:background="?attr/colorPrimaryVariant"
+        android:contentDescription="Submit"
+        android:padding="8dp"
+        android:src="@android:drawable/ic_menu_send" />
 </LinearLayout>

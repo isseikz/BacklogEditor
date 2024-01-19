@@ -1,28 +1,30 @@
 <resources>
-    <string name="app_name">BacklogEditor</string>
-    <string name="appwidget_text">EXAMPLE</string>
-    <string name="add_widget">Add widget</string>
+    <string name="app_name">Backlog Viewer</string>
 
     <!-- description of the widget -->
-    <string name="app_widget_description">BacklogEditor widget</string>
+    <string name="app_widget_description">Showcasing a project\'s item list with a quick-add button for new entries."</string>
 
     <!-- title of the settings when add new project -->
-    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="title_activity_settings">%s Settings</string>
 
     <!-- Preference Titles -->
-    <string name="project_preference_header">Choose Project</string>
-    <string name="sync_header">Sync</string>
+    <string name="about_header">About</string>
+
+    <!-- Token Preferences -->
+    <string name="token_title_github">GitHub token</string>
+    <string name="link_to_create_token_description_github">If you don\'t have it, create a personal access token from here.</string>
+    <string name="link_to_create_token_title_github">Link to GitHub settings</string>
 
     <!-- Messages Preferences -->
     <string name="token_title">Personal Access Token</string>
-    <string name="project_title">Project</string>
+    <string name="project_title">Choose Project</string>
     <string name="project_default_value_syncing">Syncing…</string>
     <string name="project_default_value_not_selected">Not selected</string>
 
-    <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <!-- About Preferences -->
+    <string name="about_how_to_use_app">How to use</string>
+    <string name="about_how_to_use_app_description">1. Create a personal access token from GitHub or tap \"%s\".\n2. Tap \"%s\" to select project.\n</string>
+    <string name="backlog_widget_btn_add_text">Add</string>
+    <string name="dialog_add_item_edit_text">Write your idea here...</string>
+    <string name="error_it_should_be_replaced">IT SHOULD BE REPLACED</string>
 </resources>

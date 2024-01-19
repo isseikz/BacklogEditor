@@ -19,7 +19,7 @@
         <activity
             android:name=".settings.SettingsActivity"
             android:exported="false"
-            android:label="@string/title_activity_settings" />
+            android:label="@string/error_it_should_be_replaced" />
         <activity android:name=".ui.AddItemDialogActivity" />
 
         <receiver
