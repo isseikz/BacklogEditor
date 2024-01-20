@@ -23,7 +23,7 @@
             android:layout_weight="1"
             android:maxLines="1"
             android:paddingHorizontal="10dp"
-            android:text="Header Project Title"
+            android:text="@string/backlogWidget_headerProject_text"
             android:textColor="?attr/colorOnPrimary" />
     </LinearLayout>
 
@@ -64,7 +64,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="No items to display"
+        android:text="@string/backlogWidget_emptyView_text"
         android:textSize="16sp"
         android:visibility="gone" />
 

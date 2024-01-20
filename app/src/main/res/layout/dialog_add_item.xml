@@ -14,15 +14,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:text="Project Name"
+        android:text="@string/dialogAddItem_projectItemTitle_text"
         android:textColor="?attr/colorOnSurface"
         android:textSize="18sp" />
 
     <TextView
+        android:id="@+id/dialogAddItem_tvDescription"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:text="Description"
+        android:text="@string/dialogAddItem_tvDescription_text"
         android:textColor="?attr/colorOnSurface"
         android:textSize="18sp" />
 
@@ -45,7 +46,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="end"
         android:background="?attr/colorPrimaryVariant"
-        android:contentDescription="Submit"
+        android:contentDescription="@string/dialogAdditem_btnSubmit_desc"
         android:padding="8dp"
         android:src="@android:drawable/ic_menu_send" />
 </LinearLayout>
