@@ -46,46 +46,54 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        val accessToken = secureTokenStorage.getAccessToken()
+        preferenceManager.preferenceDataStore = secureTokenStorage
+
 
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
-        findPreference<EditTextPreference>("personal_access_token")?.apply {
-            if (!accessToken.isNullOrEmpty()) {
-                setDefaultValue(accessToken)
-            }
 
-            // save token to secure storage when the preference is changed
-            setOnPreferenceChangeListener { _, newValue ->
-                secureTokenStorage.storeAccessToken(newValue as String)
-                scope.launch {
-                    backlogRepository.syncBacklogItems()
-                }
-                true
-            }
-        }
-
-
-        val projectPreference = findPreference<ListPreference>("project")!!
-        projectPreference.apply {
-
-            // update projects when the preference is clicked
-            setOnPreferenceClickListener {
-                val projects = backlogRepository.listProjects()
-                entries = projects.map { it.projectName }.toTypedArray()
-                entryValues = projects.map { it.projectId }.toTypedArray()
-                true
-            }
-
-            if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-                // set the default value to the preference when the preference is clicked
-                setDefaultValue(selectedProjectName)
-                setOnPreferenceChangeListener { preference, newValue ->
-                    val projectId = newValue as String
-                    widgetProjectRepository.create(widgetId, projectId)
-                    // register app widget into home screen
-                    registerAppWidget()
+        val prefToken =
+            findPreference<EditTextPreference>(getString(R.string.preference_key_github_pat))?.apply {
+                // save token to secure storage when the preference is changed
+                setOnPreferenceChangeListener { _, _ ->
+                    scope.launch {
+                        backlogRepository.syncBacklogItems()
+                    }
                     true
                 }
+            }
+
+        val prefProject =
+            findPreference<ListPreference>(getString(R.string.preference_key_github_project))?.apply {
+
+                // update projects when the preference is clicked
+                setOnPreferenceClickListener {
+                    val projects = backlogRepository.listProjects()
+                    entries = projects.map { it.projectName }.toTypedArray()
+                    entryValues = projects.map { it.projectId }.toTypedArray()
+                    true
+                }
+
+                if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                    // set the default value to the preference when the preference is clicked
+                    setDefaultValue(selectedProjectName)
+                    setOnPreferenceChangeListener { preference, newValue ->
+                        val projectId = newValue as String
+                        widgetProjectRepository.create(widgetId, projectId)
+                        // register app widget into home screen
+                        registerAppWidget()
+                        true
+                    }
+                }
+            }
+
+        findPreference<EditTextPreference>(getString(R.string.preference_key_github_username))?.apply {
+            setOnPreferenceChangeListener { preference, newValue ->
+                Timber.d("setOnPreferenceChangeListener ${preference.key} $newValue")
+                secureTokenStorage.putString(getString(R.string.preference_key_github_pat), "")
+                prefToken?.text = null
+                prefProject?.entries = emptyArray()
+                prefProject?.entryValues = emptyArray()
+                true
             }
         }
 
@@ -107,8 +115,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     else -> selectedProjectName
                 }
                 withContext(Dispatchers.Main) {
-                    projectPreference.setDefaultValue(defaultValue)
-                    projectPreference.isSelectable = available
+                    prefProject?.setDefaultValue(defaultValue)
+                    prefProject?.isSelectable = available
                 }
             }
         }

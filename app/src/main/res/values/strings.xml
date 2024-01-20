@@ -11,12 +11,13 @@
     <string name="about_header">About</string>
 
     <!-- Token Preferences -->
-    <string name="token_title_github">GitHub token</string>
+    <string name="token_title">GitHub Account settings</string>
+    <string name="token_title_github_username">User Name</string>
+    <string name="token_title_github_token">Personal Access Token</string>
     <string name="link_to_create_token_description_github">If you don\'t have it, create a personal access token from here.</string>
     <string name="link_to_create_token_title_github">Link to GitHub settings</string>
 
     <!-- Messages Preferences -->
-    <string name="token_title">Personal Access Token</string>
     <string name="project_title">Choose Project</string>
     <string name="project_default_value_syncing">Syncing…</string>
     <string name="project_default_value_not_selected">Not selected</string>
@@ -33,4 +34,7 @@
     <string name="dialogAdditem_btnSubmit_desc">Submit</string>
     <string name="dialogAddItem_tvDescription_text">Description</string>
     <string name="dialogAddItem_projectItemTitle_text">Project Name</string>
+    <string name="preference_key_github_username">github_username</string>
+    <string name="preference_key_github_pat">personal_access_token</string>
+    <string name="preference_key_github_project">project</string>
 </resources>

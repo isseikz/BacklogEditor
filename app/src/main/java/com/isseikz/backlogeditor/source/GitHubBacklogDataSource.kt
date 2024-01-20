@@ -3,18 +3,19 @@ package com.isseikz.backlogeditor.source
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.ApolloResponse
 import com.isseikz.backlogeditor.AddDraftMutation
-import com.isseikz.backlogeditor.data.BacklogItem
 import com.isseikz.backlogeditor.GetProjectsQuery
+import com.isseikz.backlogeditor.data.BacklogItem
 import com.isseikz.backlogeditor.data.BacklogStatus
 import com.isseikz.backlogeditor.data.ProjectInfo
 import com.isseikz.backlogeditor.store.SecureTokenStorage
-import com.isseikz.backlogeditor.widget.BacklogListRemoteViewsFactory
 
 class GitHubBacklogDataSource (
     private val secureTokenStorage: SecureTokenStorage
 ): BacklogDataSource {
     override suspend fun fetchBacklogItems(): Result<List<ProjectInfo>> {
-        val accessToken = secureTokenStorage.getAccessToken()
+        val (username, accessToken) = secureTokenStorage.getCredential()?.let { credential ->
+            credential.username to credential.token
+        } ?: return Result.failure(Exception("Credential not found"))
 
         val apolloClient = ApolloClient.Builder()
             .serverUrl("https://api.github.com/graphql")
@@ -22,7 +23,7 @@ class GitHubBacklogDataSource (
             .build()
 
         val response: ApolloResponse<GetProjectsQuery.Data> = apolloClient
-            .query(GetProjectsQuery("isseikz", 10, 50))
+            .query(GetProjectsQuery(username, 10, 50))
             .execute()
 
         // Output response details to logcat with Timber
