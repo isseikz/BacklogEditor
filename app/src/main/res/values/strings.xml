@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Backlog Viewer</string>
+    <string name="app_name">Backlog Widget for GitHub</string>
 
     <!-- description of the widget -->
     <string name="app_widget_description">Showcasing a project\'s item list with a quick-add button for new entries."</string>
@@ -24,7 +24,7 @@
 
     <!-- About Preferences -->
     <string name="about_how_to_use_app">How to use</string>
-    <string name="about_how_to_use_app_description">1. Create a personal access token from GitHub or tap \"%s\".\n2. Tap \"%s\" to select project.\n</string>
+    <string name="about_how_to_use_app_description">1. Enter your GitHub username.\n2. Generate a personal access token from GitHub or use \"%s\".\n3. Enter the personal access token.\n4. Select a project by tapping \"%s\".</string>
     <string name="backlog_widget_btn_add_text">Add</string>
     <string name="dialog_add_item_edit_text">Write your idea here…</string>
     <string name="error_it_should_be_replaced">IT SHOULD BE REPLACED</string>
@@ -37,4 +37,6 @@
     <string name="preference_key_github_username">github_username</string>
     <string name="preference_key_github_pat">personal_access_token</string>
     <string name="preference_key_github_project">project</string>
+
+    <string name="title_open_source_licenses">Open Source Licenses</string>
 </resources>

@@ -27,7 +27,7 @@
             app:title="@string/link_to_create_token_title_github">
             <intent
                 android:action="android.intent.action.VIEW"
-                android:data="https://github.com/settings/tokens/new?description=GitHub%20GraphQL%20API%20Token&amp;scopes=user,repo,admin:org,project,project:read" />
+                android:data="https://github.com/settings/tokens/new?description=Backlog%20Widget%20for%20GitHub&amp;scopes=user,repo,admin:org,project,project:read" />
         </Preference>
     </PreferenceCategory>
 
@@ -36,6 +36,30 @@
             app:key="preference_about_how_to_use"
             app:summary="@string/about_how_to_use_app_description"
             app:title="@string/about_how_to_use_app" />
+
+        <Preference
+            app:key="link_to_oss_license"
+            app:title="Open Source License Notices" >
+            <intent
+                android:targetPackage="com.isseikz.backlogeditor"
+                android:targetClass="com.google.android.gms.oss.licenses.OssLicensesMenuActivity" />
+        </Preference>
+
+        <Preference
+            app:key="link_to_privacy_policy"
+            app:title="Privacy Policy" >
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="https://isseikuzumaki.tokyo/app-notices/backlog-widget-for-github-privacy-policy/" />
+        </Preference>
+
+        <Preference
+            app:key="link_to_privacy_policy"
+            app:title="Terms &amp; Conditions" >
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="https://isseikuzumaki.tokyo/app-notices/backlog-widget-for-github-terms-conditions/" />
+        </Preference>
     </PreferenceCategory>
 
 </PreferenceScreen>

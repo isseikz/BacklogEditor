@@ -1,5 +1,6 @@
 plugins {
     id("com.android.application")
+    id("com.google.android.gms.oss-licenses-plugin")
     id("org.jetbrains.kotlin.android")
     id("com.apollographql.apollo3")
     kotlin("kapt")
@@ -73,6 +74,7 @@ dependencies {
     kapt("androidx.hilt:hilt-compiler:1.1.0")
 
     implementation("androidx.datastore:datastore:1.0.0")
+    implementation("com.google.android.gms:play-services-oss-licenses:17.0.1")
 
 }
 
