@@ -13,11 +13,6 @@ class BacklogRepository(
     val lastUpdated: Long
         get() = _lastUpdated
     private var _lastUpdated = 0L
-    private val _backlogItems = mutableListOf(
-        BacklogItem("title1", "1", BacklogStatus.TODO, 3),
-        BacklogItem("title2", "2", BacklogStatus.IN_PROGRESS, 2),
-        BacklogItem("title3", "3", BacklogStatus.DONE, 1),
-    )
 
     val projectsFlow: StateFlow<Map<String, ProjectInfo>>
         get() = _projectsFlow.asStateFlow()
