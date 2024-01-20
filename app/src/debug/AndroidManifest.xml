@@ -2,8 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-
     <application
         android:name=".ApplicationMain"
         android:allowBackup="true"
@@ -22,34 +20,12 @@
             android:label="@string/error_it_should_be_replaced" />
         <activity
             android:name=".ui.AddItemDialogActivity"
-            android:exported="false" />
-
-        <receiver
-            android:name=".AddItemReceiver"
-            android:enabled="true"
-            android:exported="false" />
-
-        <service
-            android:name=".widget.BacklogListRemoteViewsService"
-            android:exported="false"
-            android:permission="android.permission.BIND_REMOTEVIEWS" />
-
-        <receiver
-            android:name=".widget.BacklogAppWidget"
-            android:exported="true">
+            android:exported="true"
+            tools:replace="android:exported" >
             <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="${applicationId}.action.addItem" />
             </intent-filter>
-
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/backlog_widget_info" />
-        </receiver>
-
-        <provider
-            android:name="androidx.startup.InitializationProvider"
-            android:authorities="${applicationId}.androidx-startup"
-            tools:node="remove" />
+        </activity>
     </application>
 
 </manifest>

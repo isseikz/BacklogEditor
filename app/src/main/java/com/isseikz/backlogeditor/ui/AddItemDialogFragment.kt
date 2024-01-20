@@ -30,7 +30,9 @@ class AddItemDialogFragment : DialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val projectId = arguments?.getString(BUNDLE_KEY_PROJECT_ID) ?: run {
+        val projectId = arguments?.getString(BUNDLE_KEY_PROJECT_ID, "")
+            ?.takeIf { it.isNotEmpty() || BuildConfig.DEBUG }
+        ?:run {
             Timber.w("projectId is null")
             if (BuildConfig.showDebugToast) {
                 Toast.makeText(
