@@ -27,4 +27,5 @@
     <string name="backlog_widget_btn_add_text">Add</string>
     <string name="dialog_add_item_edit_text">Write your idea here...</string>
     <string name="error_it_should_be_replaced">IT SHOULD BE REPLACED</string>
+    <string name="backlog_widget_btnAddItem_desc">Add entry</string>
 </resources>

@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="5sp"
             android:background="?attr/colorPrimary"
-            android:contentDescription="Add entry"
+            android:contentDescription="@string/backlog_widget_btnAddItem_desc"
             android:src="@android:drawable/ic_menu_add"
             android:text="@string/backlog_widget_btn_add_text"
             android:textColor="?attr/colorOnPrimary"
