@@ -49,18 +49,18 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val accessToken = secureTokenStorage.getAccessToken()
 
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
-        if (!accessToken.isNullOrEmpty()) {
-            findPreference<EditTextPreference>("personal_access_token")?.apply {
+        findPreference<EditTextPreference>("personal_access_token")?.apply {
+            if (!accessToken.isNullOrEmpty()) {
                 setDefaultValue(accessToken)
+            }
 
-                // save token to secure storage when the preference is changed
-                setOnPreferenceChangeListener { _, newValue ->
-                    secureTokenStorage.storeAccessToken(newValue as String)
-                    scope.launch {
-                        backlogRepository.syncBacklogItems()
-                    }
-                    true
+            // save token to secure storage when the preference is changed
+            setOnPreferenceChangeListener { _, newValue ->
+                secureTokenStorage.storeAccessToken(newValue as String)
+                scope.launch {
+                    backlogRepository.syncBacklogItems()
                 }
+                true
             }
         }
 
@@ -78,8 +78,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
             if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
                 // set the default value to the preference when the preference is clicked
-                val defaultValue =
-                    widgetProjectRepository.widgetProjectMapFlow.value[widgetId] ?: ""
                 setDefaultValue(selectedProjectName)
                 setOnPreferenceChangeListener { preference, newValue ->
                     val projectId = newValue as String
