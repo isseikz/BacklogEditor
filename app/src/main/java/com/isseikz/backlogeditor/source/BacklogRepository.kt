@@ -10,14 +10,15 @@ import kotlinx.coroutines.flow.asStateFlow
 class BacklogRepository(
     private val gitHubBacklogDataSource: BacklogDataSource,
 ) {
+    val lastUpdated: Long
+        get() = _lastUpdated
+    private var _lastUpdated = 0L
     private val _backlogItems = mutableListOf(
         BacklogItem("title1", "1", BacklogStatus.TODO, 3),
         BacklogItem("title2", "2", BacklogStatus.IN_PROGRESS, 2),
         BacklogItem("title3", "3", BacklogStatus.DONE, 1),
     )
-    fun getBacklogItems(): List<BacklogItem> {
-        return _backlogItems.toList()
-    }
+
     val projectsFlow: StateFlow<Map<String, ProjectInfo>>
         get() = _projectsFlow.asStateFlow()
     private val _projectsFlow: MutableStateFlow<Map<String, ProjectInfo>> = MutableStateFlow(mapOf())
@@ -45,6 +46,7 @@ class BacklogRepository(
                 _projectsFlow.value = _projects.toMap()
             }?.let {
                 _projectsAvailabilityFlow.value = true
+                _lastUpdated = System.currentTimeMillis()
             }
         }
     }

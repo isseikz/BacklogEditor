@@ -3,7 +3,6 @@ package com.isseikz.backlogeditor
 import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
-import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
@@ -21,6 +20,7 @@ class SyncDataWorker @AssistedInject constructor(
     private val backlogRepository: BacklogRepository,
 ) : CoroutineWorker(applicationContext, workerParams) {
     override suspend fun doWork(): Result {
+
         backlogRepository.syncBacklogItems().also {
             Timber.d("hashcode: ${backlogRepository.hashCode()}")
         }
