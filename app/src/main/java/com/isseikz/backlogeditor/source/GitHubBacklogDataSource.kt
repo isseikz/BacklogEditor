@@ -23,7 +23,7 @@ class GitHubBacklogDataSource(
             ?: return Result.failure(Exception("Credential not found"))
 
         val response: ApolloResponse<GetProjectsQuery.Data> = client(accessToken)
-            .query(GetProjectsQuery(username, 50, 50))
+            .query(GetProjectsQuery(username, NUM_OF_PROJECTS, NUM_OF_ITEMS_PER_PROJECT))
             .execute()
 
         // Output response details to logcat with Timber
@@ -145,6 +145,8 @@ class GitHubBacklogDataSource(
         }
 
     companion object {
+        private const val NUM_OF_PROJECTS = 50
+        private const val NUM_OF_ITEMS_PER_PROJECT = 50
         private fun client(accessToken: String) = ApolloClient.Builder()
             .serverUrl("https://api.github.com/graphql")
             .addHttpHeader("Authorization", "Bearer $accessToken")

@@ -52,13 +52,19 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
 
+        val keyToken = getString(R.string.preference_key_github_pat)
         val prefToken =
-            findPreference<EditTextPreference>(getString(R.string.preference_key_github_pat))!!
+            findPreference<EditTextPreference>(keyToken)
         val perfUsername = findPreference<EditTextPreference>(
             getString(R.string.preference_key_github_username)
-        )!!
+        )
         val prefProject =
-            findPreference<ListPreference>(getString(R.string.preference_key_github_project))!!
+            findPreference<ListPreference>(getString(R.string.preference_key_github_project))
+
+        if (prefToken == null || perfUsername == null || prefProject == null) {
+            Timber.w("prefToken or perfUsername or prefProject is null")
+            return
+        }
 
         prefToken.apply {
             // save token to secure storage when the preference is changed
@@ -71,14 +77,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         prefProject.apply {
-            // when preference is clicked, update projects
-            setOnPreferenceClickListener {
-                val projects = backlogRepository.listProjects()
-                entries = projects.map { it.projectName }.toTypedArray() + "Add Project"
-                entryValues =
-                    projects.map { it.projectId }.toTypedArray() + ProjectEntry_addProject
-                true
-            }
             // update projects when the preference is clicked
             setOnPreferenceClickListener {
                 val projects = backlogRepository.listProjects()
@@ -102,6 +100,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
                                 putString(
                                     CreateProjectDialogFragment.BUNDLE_KEY_USER_ID, username
                                 )
+                                putString(
+                                    CreateProjectDialogFragment.BUNDLE_KEY_SOURCE_NAME,
+                                    "github"
+                                )
                             }
                         }.show(parentFragmentManager, "CreateProjectDialogFragment")
 
@@ -119,9 +121,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         perfUsername.apply {
             setOnPreferenceChangeListener { preference, newValue ->
                 Timber.d("setOnPreferenceChangeListener ${preference.key} $newValue")
-                secureTokenStorage.putString(
-                    getString(R.string.preference_key_github_pat), ""
-                )
+                secureTokenStorage.putString(keyToken, "")
                 prefToken.text = null
                 prefProject.entries = emptyArray()
                 prefProject.entryValues = emptyArray()
@@ -165,7 +165,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     companion object {
-        private const val ProjectEntry_addProject =
-            "projectEntry_addProject" // FIXME: Not guaranteed difference with the users projects
+        private const val ProjectEntry_addProject = "PROJECT_ENTRY_ADD_PROJECT"
     }
 }

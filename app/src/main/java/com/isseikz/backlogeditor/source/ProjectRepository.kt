@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.stateIn
 
 class ProjectRepository(
     private val sources: List<DataSource<ProjectInfo>>,
-    scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
+    scope: CoroutineScope
 ) {
     val projectsFlow: StateFlow<List<ProjectInfo>>
 
@@ -20,9 +20,18 @@ class ProjectRepository(
         }.stateIn(scope, SharingStarted.Lazily, listOf())
     }
 
-    suspend fun create(sourceName: String, projectInfo: ProjectInfo): Result<Unit> {
+    suspend fun create(sourceName: Any, projectInfo: ProjectInfo): Result<Unit> {
         val source = sources.firstOrNull { it.name == sourceName }
-            ?: return Result.failure(Exception("Source not found"))
+            ?: return Result.failure(IllegalStateException("Source not found"))
         return source.create(projectInfo)
+    }
+
+    companion object {
+        fun create(
+            sources: List<DataSource<ProjectInfo>>,
+            scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
+        ): ProjectRepository {
+            return ProjectRepository(sources, scope)
+        }
     }
 }

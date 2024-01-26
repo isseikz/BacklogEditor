@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class BacklogRepository(
-    private val sources: List<BacklogDataSource>,
+    private val backlogDataSources: List<BacklogDataSource>,
 ) {
     val lastUpdated: Long
         get() = _lastUpdated
@@ -34,7 +34,7 @@ class BacklogRepository(
 
     suspend fun syncBacklogItems() {
         _projectsAvailabilityFlow.update { _ -> false }
-        sources.forEach {
+        backlogDataSources.forEach {
             it.fetchBacklogItems().getOrNull()?.forEach { newInfo ->
                 _projects[newInfo.projectId] = newInfo
                 _projectsFlow.update { oldProjects ->
@@ -44,13 +44,15 @@ class BacklogRepository(
                 }
                 _lastUpdated = System.currentTimeMillis()
                 _projectsAvailabilityFlow.update { _ -> true }
+            } ?: run {
+                _projectsAvailabilityFlow.update { _ -> false }
             }
         }
     }
 
     suspend fun addBacklogItem(projectId: String, title: String): Boolean {
-        val github = sources.firstOrNull() ?: return false
-        if (github.addBacklogItem(projectId, title).isSuccess) {
+        val github = backlogDataSources.firstOrNull() ?: return false
+        return if (github.addBacklogItem(projectId, title).isSuccess) {
             _projects[projectId]?.items?.let { old ->
                 old.toMutableList()
                     .plus(BacklogItem(projectId, title, BacklogStatus.TODO, old.size + 1))
@@ -60,8 +62,9 @@ class BacklogRepository(
                 _projects[projectId] = newProject
                 _projectsFlow.value = _projects.toMap()
             }
-            return true
+            true
+        } else {
+            false
         }
-        return false
     }
 }

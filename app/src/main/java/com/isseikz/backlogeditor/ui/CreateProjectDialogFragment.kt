@@ -37,7 +37,7 @@ class CreateProjectDialogFragment : DialogFragment() {
     ): View? {
 
         val userId = arguments?.getString(BUNDLE_KEY_USER_ID, "")
-            ?.takeIf { it.isNotEmpty() || BuildConfig.DEBUG }
+            ?.takeIf { it.isNotEmpty() }
             ?: run {
                 Timber.w("userId is null")
                 if (BuildConfig.showDebugToast) {
@@ -47,7 +47,19 @@ class CreateProjectDialogFragment : DialogFragment() {
                         Toast.LENGTH_SHORT
                     ).show()
                 }
-                throw IllegalArgumentException("userId is null")
+            }
+        val sourceName = arguments?.getString(BUNDLE_KEY_SOURCE_NAME, "")
+            ?.takeIf { it.isNotEmpty() }
+            ?: run {
+                Timber.w("sourceName is null")
+                if (BuildConfig.showDebugToast) {
+                    Toast.makeText(
+                        requireContext(),
+                        "sourceName is null @ CreateProjectDialogFragment",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                return null
             }
         return inflater.inflate(R.layout.dialog_add_item, container, false).apply {
             val editText = findViewById<EditText>(R.id.editTextNewItem)
@@ -60,8 +72,8 @@ class CreateProjectDialogFragment : DialogFragment() {
                     CoroutineScope(Dispatchers.IO).launch {
                         val projectName = editText.text.toString()
                         projectRepository.create(
-                            "github",
-                            ProjectInfo("", projectName, emptyList())
+                            sourceName,
+                            ProjectInfo(ProjectInfo.PROJECT_ID_UNKNOWN, projectName, emptyList())
                         ).takeIf { it.isSuccess }?.let {
                             BacklogAppWidget.requestUpdate(requireContext())
                             withContext(Dispatchers.Main) {
@@ -105,5 +117,6 @@ class CreateProjectDialogFragment : DialogFragment() {
         }
 
         const val BUNDLE_KEY_USER_ID = "user_id"
+        const val BUNDLE_KEY_SOURCE_NAME = "source_name"
     }
 }
