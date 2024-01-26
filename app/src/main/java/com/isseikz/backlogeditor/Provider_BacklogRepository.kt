@@ -50,6 +50,6 @@ object Provider_BacklogRepository {
     @Singleton
     @Provides
     fun provideProjectRepository(gitHubBacklogDataSource: GitHubBacklogDataSource): ProjectRepository {
-        return ProjectRepository.create(listOf(gitHubBacklogDataSource))
+        return ProjectRepository.createWithIODispatchers(listOf(gitHubBacklogDataSource))
     }
 }

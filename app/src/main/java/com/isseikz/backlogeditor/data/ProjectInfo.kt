@@ -6,6 +6,6 @@ data class ProjectInfo(
     val items: List<BacklogItem>
 ) {
     companion object {
-        const val PROJECT_ID_UNKNOWN = "unknown"
+        const val UNDEFINED_PROJECT_ID = "undefined_project_id"
     }
 }

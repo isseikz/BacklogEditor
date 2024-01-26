@@ -36,7 +36,7 @@ class CreateProjectDialogFragment : DialogFragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        val userId = arguments?.getString(BUNDLE_KEY_USER_ID, "")
+        val userId = requireArguments().getString(BUNDLE_KEY_USER_ID, "")
             ?.takeIf { it.isNotEmpty() }
             ?: run {
                 Timber.w("userId is null")
@@ -48,7 +48,7 @@ class CreateProjectDialogFragment : DialogFragment() {
                     ).show()
                 }
             }
-        val sourceName = arguments?.getString(BUNDLE_KEY_SOURCE_NAME, "")
+        val sourceName = requireArguments().getString(BUNDLE_KEY_SOURCE_NAME, "")
             ?.takeIf { it.isNotEmpty() }
             ?: run {
                 Timber.w("sourceName is null")
@@ -59,7 +59,7 @@ class CreateProjectDialogFragment : DialogFragment() {
                         Toast.LENGTH_SHORT
                     ).show()
                 }
-                return null
+                throw IllegalArgumentException("sourceName is null")
             }
         return inflater.inflate(R.layout.dialog_add_item, container, false).apply {
             val editText = findViewById<EditText>(R.id.editTextNewItem)
@@ -70,10 +70,10 @@ class CreateProjectDialogFragment : DialogFragment() {
                     isEnabled = false
 
                     CoroutineScope(Dispatchers.IO).launch {
-                        val projectName = editText.text.toString()
+                        val projectName = editText.text.toString().trimStart().trimEnd()
                         projectRepository.create(
                             sourceName,
-                            ProjectInfo(ProjectInfo.PROJECT_ID_UNKNOWN, projectName, emptyList())
+                            ProjectInfo(ProjectInfo.UNDEFINED_PROJECT_ID, projectName, emptyList())
                         ).takeIf { it.isSuccess }?.let {
                             BacklogAppWidget.requestUpdate(requireContext())
                             withContext(Dispatchers.Main) {

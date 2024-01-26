@@ -51,8 +51,11 @@ class BacklogRepository(
     }
 
     suspend fun addBacklogItem(projectId: String, title: String): Boolean {
-        val github = backlogDataSources.firstOrNull() ?: return false
-        return if (github.addBacklogItem(projectId, title).isSuccess) {
+        val result = backlogDataSources.firstOrNull()
+            ?.addBacklogItem(projectId, title)
+            ?: return false
+
+        if (result.isSuccess) {
             _projects[projectId]?.items?.let { old ->
                 old.toMutableList()
                     .plus(BacklogItem(projectId, title, BacklogStatus.TODO, old.size + 1))
@@ -62,9 +65,10 @@ class BacklogRepository(
                 _projects[projectId] = newProject
                 _projectsFlow.value = _projects.toMap()
             }
-            true
         } else {
-            false
+            result.exceptionOrNull()?.printStackTrace()
         }
+
+        return result.isSuccess
     }
 }
