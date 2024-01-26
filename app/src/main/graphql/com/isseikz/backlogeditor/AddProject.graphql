@@ -1,0 +1,9 @@
+mutation AddUserProject($userId: ID!, $projectName: String!)
+{
+    createProjectV2(input: {ownerId: $userId title: $projectName}) {
+        projectV2 {
+            id
+            title
+        }
+    }
+}

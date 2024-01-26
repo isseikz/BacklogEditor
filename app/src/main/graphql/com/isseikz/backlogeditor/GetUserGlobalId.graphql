@@ -1,0 +1,5 @@
+query GetUserGlobalId {
+  viewer {
+    id
+  }
+}

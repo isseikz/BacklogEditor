@@ -6,9 +6,10 @@ import com.isseikz.backlogeditor.data.ProjectInfo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 class BacklogRepository(
-    private val gitHubBacklogDataSource: BacklogDataSource,
+    private val sources: List<BacklogDataSource>,
 ) {
     val lastUpdated: Long
         get() = _lastUpdated
@@ -32,24 +33,27 @@ class BacklogRepository(
     }
 
     suspend fun syncBacklogItems() {
-        _projectsAvailabilityFlow.value = false
-        val result = gitHubBacklogDataSource.fetchBacklogItems()
-        if (result.isSuccess) {
-            _projects.clear()
-            result.getOrNull()?.forEach { projectInfo ->
-                _projects[projectInfo.projectId] = projectInfo
-                _projectsFlow.value = _projects.toMap()
-            }?.let {
-                _projectsAvailabilityFlow.value = true
+        _projectsAvailabilityFlow.update { _ -> false }
+        sources.forEach {
+            it.fetchBacklogItems().getOrNull()?.forEach { newInfo ->
+                _projects[newInfo.projectId] = newInfo
+                _projectsFlow.update { oldProjects ->
+                    oldProjects.toMutableMap().apply {
+                        this[newInfo.projectId] = newInfo
+                    }.toMap()
+                }
                 _lastUpdated = System.currentTimeMillis()
+                _projectsAvailabilityFlow.update { _ -> true }
             }
         }
     }
 
     suspend fun addBacklogItem(projectId: String, title: String): Boolean {
-        if (gitHubBacklogDataSource.addBacklogItem(projectId, title).isSuccess) {
+        val github = sources.firstOrNull() ?: return false
+        if (github.addBacklogItem(projectId, title).isSuccess) {
             _projects[projectId]?.items?.let { old ->
-                old.toMutableList().plus(BacklogItem(projectId, title, BacklogStatus.TODO, old.size + 1))
+                old.toMutableList()
+                    .plus(BacklogItem(projectId, title, BacklogStatus.TODO, old.size + 1))
             }?.toList()?.let { new ->
                 _projects[projectId]?.copy(items = new)
             }?.let { newProject ->

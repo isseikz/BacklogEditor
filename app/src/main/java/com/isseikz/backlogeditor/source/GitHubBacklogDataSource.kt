@@ -3,27 +3,27 @@ package com.isseikz.backlogeditor.source
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.ApolloResponse
 import com.isseikz.backlogeditor.AddDraftMutation
+import com.isseikz.backlogeditor.AddUserProjectMutation
 import com.isseikz.backlogeditor.GetProjectsQuery
+import com.isseikz.backlogeditor.GetUserGlobalIdQuery
 import com.isseikz.backlogeditor.data.BacklogItem
 import com.isseikz.backlogeditor.data.BacklogStatus
 import com.isseikz.backlogeditor.data.ProjectInfo
 import com.isseikz.backlogeditor.store.SecureTokenStorage
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
-class GitHubBacklogDataSource (
+class GitHubBacklogDataSource(
     private val secureTokenStorage: SecureTokenStorage
-): BacklogDataSource {
+) : BacklogDataSource, DataSource<ProjectInfo> {
     override suspend fun fetchBacklogItems(): Result<List<ProjectInfo>> {
-        val (username, accessToken) = secureTokenStorage.getCredential()?.let { credential ->
-            credential.username to credential.token
-        } ?: return Result.failure(Exception("Credential not found"))
+        val (username, accessToken) = credential
+            ?: return Result.failure(Exception("Credential not found"))
 
-        val apolloClient = ApolloClient.Builder()
-            .serverUrl("https://api.github.com/graphql")
-            .addHttpHeader("Authorization", "Bearer $accessToken")
-            .build()
-
-        val response: ApolloResponse<GetProjectsQuery.Data> = apolloClient
-            .query(GetProjectsQuery(username, 10, 50))
+        val response: ApolloResponse<GetProjectsQuery.Data> = client(accessToken)
+            .query(GetProjectsQuery(username, 50, 50))
             .execute()
 
         // Output response details to logcat with Timber
@@ -87,4 +87,67 @@ class GitHubBacklogDataSource (
             onIssue?.closed == false && onPullRequest?.closed == false -> BacklogStatus.IN_PROGRESS
             else -> BacklogStatus.TODO // onDraftIssue
         }
+
+    override val name: String
+        get() = "github"
+    override val dataFlow: StateFlow<List<ProjectInfo>>
+        get() = _projectsFlow.asStateFlow()
+    private val _projectsFlow = MutableStateFlow<List<ProjectInfo>>(listOf())
+
+    override suspend fun create(data: ProjectInfo): Result<Unit> {
+        val (username, token) = credential
+            ?: return Result.failure(Exception("Credential not found"))
+
+        return client(token).query(GetUserGlobalIdQuery()).execute().let {
+            if (it.hasErrors()) {
+                println("it.errors?.firstOrNull()?.message = ${it.errors?.firstOrNull()?.message}")
+                return Result.failure(Exception(it.errors?.firstOrNull()?.message))
+            }
+            it.data?.viewer?.id
+        }?.let { userId ->
+            client(token)
+                .mutation(AddUserProjectMutation(userId, data.projectName))
+        }?.execute()
+            ?.let {
+                if (it.hasErrors()) {
+                    println("it.errors?.firstOrNull()?.message = ${it.errors?.firstOrNull()?.message}")
+                    Result.failure(Exception(it.errors?.firstOrNull()?.message))
+                } else {
+                    it.data?.createProjectV2?.projectV2?.let {newProject ->
+                        _projectsFlow.update {oldProjects ->
+                            oldProjects + ProjectInfo(
+                                projectId = newProject.id,
+                                projectName = newProject.title,
+                                items = emptyList()
+                            )
+                        }
+                    }
+                    Result.success(Unit)
+                }
+            } ?: Result.failure(Exception("Failed to create project"))
+    }
+
+    override suspend fun read(): Result<List<ProjectInfo>> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun update(data: ProjectInfo): Result<ProjectInfo> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun delete(data: ProjectInfo): Result<ProjectInfo> {
+        TODO("Not yet implemented")
+    }
+
+    private val credential: Pair<String, String>?
+        get() = secureTokenStorage.getCredential()?.let { credential ->
+            credential.username to credential.token
+        }
+
+    companion object {
+        private fun client(accessToken: String) = ApolloClient.Builder()
+            .serverUrl("https://api.github.com/graphql")
+            .addHttpHeader("Authorization", "Bearer $accessToken")
+            .build()
+    }
 }

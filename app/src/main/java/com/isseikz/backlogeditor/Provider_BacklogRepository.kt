@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.isseikz.backlogeditor.data.PreferenceKey.Companion.PreferenceName
 import com.isseikz.backlogeditor.source.BacklogRepository
 import com.isseikz.backlogeditor.source.GitHubBacklogDataSource
+import com.isseikz.backlogeditor.source.ProjectRepository
 import com.isseikz.backlogeditor.store.SecureTokenStorage
 import com.isseikz.backlogeditor.store.WidgetProjectPreferenceWidgetProjectDataStore
 import com.isseikz.backlogeditor.store.WidgetProjectRepository
@@ -32,7 +33,7 @@ object Provider_BacklogRepository {
     @Singleton
     @Provides
     fun provideBacklogRepository(gitHubBacklogDataSource: GitHubBacklogDataSource): BacklogRepository {
-        return BacklogRepository(gitHubBacklogDataSource)
+        return BacklogRepository(listOf(gitHubBacklogDataSource))
     }
 
     @Singleton
@@ -43,5 +44,11 @@ object Provider_BacklogRepository {
         }
         val widgetProjectPreferenceDataStore = WidgetProjectPreferenceWidgetProjectDataStore(dataSource)
         return WidgetProjectRepository(widgetProjectPreferenceDataStore)
+    }
+
+    @Singleton
+    @Provides
+    fun provideProjectRepository(gitHubBacklogDataSource: GitHubBacklogDataSource): ProjectRepository {
+        return ProjectRepository(listOf(gitHubBacklogDataSource))
     }
 }
