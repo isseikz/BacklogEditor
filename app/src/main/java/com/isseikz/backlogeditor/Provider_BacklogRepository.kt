@@ -33,7 +33,7 @@ object Provider_BacklogRepository {
 
     @Singleton
     @Provides
-    fun provideBacklogRepository(gitHubBacklogDataSource: BacklogDataSource): BacklogRepository {
+    fun provideBacklogRepository(gitHubBacklogDataSource: GitHubBacklogDataSource): BacklogRepository {
         return BacklogRepository(listOf(gitHubBacklogDataSource))
     }
 
