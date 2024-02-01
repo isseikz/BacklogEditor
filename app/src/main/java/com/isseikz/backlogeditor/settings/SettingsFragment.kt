@@ -13,6 +13,7 @@ import com.isseikz.backlogeditor.SyncDataWorker
 import com.isseikz.backlogeditor.source.BacklogRepository
 import com.isseikz.backlogeditor.store.SecureTokenStorage
 import com.isseikz.backlogeditor.store.WidgetProjectRepository
+import com.isseikz.backlogeditor.ui.CreateProjectDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,48 +52,76 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
 
+        val keyGitHubPersonalAccessToken = getString(R.string.preference_key_github_pat)
         val prefToken =
-            findPreference<EditTextPreference>(getString(R.string.preference_key_github_pat))?.apply {
-                // save token to secure storage when the preference is changed
-                setOnPreferenceChangeListener { _, _ ->
-                    scope.launch {
-                        backlogRepository.syncBacklogItems()
-                    }
-                    true
-                }
-            }
-
+            findPreference<EditTextPreference>(keyGitHubPersonalAccessToken)
+        val perfUsername = findPreference<EditTextPreference>(
+            getString(R.string.preference_key_github_username)
+        )
         val prefProject =
-            findPreference<ListPreference>(getString(R.string.preference_key_github_project))?.apply {
+            findPreference<ListPreference>(getString(R.string.preference_key_github_project))
 
-                // update projects when the preference is clicked
-                setOnPreferenceClickListener {
-                    val projects = backlogRepository.listProjects()
-                    entries = projects.map { it.projectName }.toTypedArray()
-                    entryValues = projects.map { it.projectId }.toTypedArray()
-                    true
-                }
+        if (prefToken == null || perfUsername == null || prefProject == null) {
+            Timber.w("prefToken or perfUsername or prefProject is null")
+            return
+        }
 
-                if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-                    // set the default value to the preference when the preference is clicked
-                    setDefaultValue(selectedProjectName)
-                    setOnPreferenceChangeListener { preference, newValue ->
-                        val projectId = newValue as String
-                        widgetProjectRepository.create(widgetId, projectId)
-                        // register app widget into home screen
-                        registerAppWidget()
-                        true
-                    }
+        prefToken.setOnPreferenceChangeListener { _, _ ->
+                scope.launch {
+                    backlogRepository.syncBacklogItems()
                 }
+                true
             }
 
-        findPreference<EditTextPreference>(getString(R.string.preference_key_github_username))?.apply {
+        prefProject.apply {
+            // update projects when the preference is clicked
+            setOnPreferenceClickListener {
+                val projectList = backlogRepository.listProjects()
+                entries = projectList.map { it.projectName }.toTypedArray() + "Add Project"
+                entryValues =
+                    projectList.map { it.projectId }.toTypedArray() + ProjectEntry_addProject
+                true
+            }
+
+            if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                val username = perfUsername.text ?: ""
+
+                // set the default value to the preference when the preference is clicked
+                setDefaultValue(selectedProjectName)
+                setOnPreferenceChangeListener { _, newValue ->
+                    val projectId = newValue as String
+                    if (projectId == ProjectEntry_addProject) {
+                        // open CreateProjectDialogFragment
+                        CreateProjectDialogFragment().apply {
+                            arguments = Bundle().apply {
+                                putString(
+                                    CreateProjectDialogFragment.BUNDLE_KEY_USER_ID, username
+                                )
+                                putString(
+                                    CreateProjectDialogFragment.BUNDLE_KEY_SOURCE_NAME,
+                                    "github" //TODO: support other sources
+                                )
+                            }
+                        }.show(parentFragmentManager, "CreateProjectDialogFragment")
+
+
+                        return@setOnPreferenceChangeListener false
+                    }
+                    widgetProjectRepository.create(widgetId, projectId)
+                    // register app widget into home screen
+                    registerAppWidget()
+                    true
+                }
+            }
+        }
+
+        perfUsername.apply {
             setOnPreferenceChangeListener { preference, newValue ->
                 Timber.d("setOnPreferenceChangeListener ${preference.key} $newValue")
-                secureTokenStorage.putString(getString(R.string.preference_key_github_pat), "")
-                prefToken?.text = null
-                prefProject?.entries = emptyArray()
-                prefProject?.entryValues = emptyArray()
+                secureTokenStorage.putString(keyGitHubPersonalAccessToken, "")
+                prefToken.text = null
+                prefProject.entries = emptyArray()
+                prefProject.entryValues = emptyArray()
                 true
             }
         }
@@ -130,5 +159,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
         requireActivity().setResult(Activity.RESULT_OK, result)
         requireActivity().finish()
+    }
+
+    companion object {
+        private const val ProjectEntry_addProject = "PROJECT_ENTRY_ADD_PROJECT"
     }
 }
