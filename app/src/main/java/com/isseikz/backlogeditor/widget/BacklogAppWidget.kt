@@ -12,6 +12,7 @@ import android.widget.RemoteViews
 import androidx.work.WorkManager
 import com.isseikz.backlogeditor.AddItemReceiver
 import com.isseikz.backlogeditor.R
+import com.isseikz.backlogeditor.RefreshItemsReceiver
 import com.isseikz.backlogeditor.SyncDataWorker
 import com.isseikz.backlogeditor.source.BacklogRepository
 import com.isseikz.backlogeditor.store.WidgetProjectRepository
@@ -102,6 +103,14 @@ class BacklogAppWidget : AppWidgetProvider() {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
             setOnClickPendingIntent(R.id.buttonAddItem, addItemPendingIntent)
+
+            val refreshPendingIntent = PendingIntent.getBroadcast(
+                context,
+                0,
+                RefreshItemsReceiver.createIntent(context),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            setOnClickPendingIntent(R.id.buttonRefreshItem, refreshPendingIntent)
         }
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }

@@ -34,18 +34,32 @@
         android:orientation="horizontal">
 
         <ImageButton
+            android:id="@+id/buttonRefreshItem"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5sp"
+            android:contentDescription="@string/backlog_widget_btnAddItem_desc"
+            android:src="@drawable/baseline_autorenew_24"
+            android:text="@string/backlog_widget_btn_add_text"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="16sp"
+            app:strokeColor="?attr/colorOnSurface"
+            android:tint="?attr/colorOnSurface" />
+
+        <ImageButton
             android:id="@+id/buttonAddItem"
             style="@style/Widget.Material3.Button.IconButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5sp"
-            android:background="?attr/colorPrimary"
             android:contentDescription="@string/backlog_widget_btnAddItem_desc"
-            android:src="@android:drawable/ic_menu_add"
+            android:src="@drawable/outline_add_circle_24"
             android:text="@string/backlog_widget_btn_add_text"
-            android:textColor="?attr/colorOnPrimary"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="16sp"
-            app:strokeColor="?attr/colorPrimaryFixed" />
+            app:strokeColor="?attr/colorOnSurface"
+            android:tint="?attr/colorOnSurface" />
 
     </LinearLayout>
 
