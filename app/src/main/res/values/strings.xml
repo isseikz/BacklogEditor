@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Backlog Widget for GitHub</string>
+    <string name="app_name" translatable="false">Backlog Widget for GitHub</string>
 
     <!-- description of the widget -->
     <string name="app_widget_description">Showcasing a project\'s item list with a quick-add button for new entries."</string>
@@ -34,9 +34,9 @@
     <string name="dialogAdditem_btnSubmit_desc">Submit</string>
     <string name="dialogAddItem_tvDescription_text">Description</string>
     <string name="dialogAddItem_projectItemTitle_text">Project Name</string>
-    <string name="preference_key_github_username">github_username</string>
-    <string name="preference_key_github_pat">personal_access_token</string>
-    <string name="preference_key_github_project">project</string>
+    <string name="preference_key_github_username" translatable="false">github_username</string>
+    <string name="preference_key_github_pat" translatable="false">personal_access_token</string>
+    <string name="preference_key_github_project" translatable="false">project</string>
 
     <string name="title_open_source_licenses">Open Source Licenses</string>
 </resources>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- description of the widget -->
+    <string name="app_widget_description">新しいエントリーのクイック追加ボタン付きのプロジェクトのアイテムリストを表示します。</string>
+
+    <!-- title of the settings when add new project -->
+    <string name="title_activity_settings">%sの設定</string>
+
+    <!-- Preference Titles -->
+    <string name="about_header">このアプリについて</string>
+
+    <!-- Token Preferences -->
+    <string name="token_title">GitHubアカウント設定</string>
+    <string name="token_title_github_username">ユーザー名</string>
+    <string name="token_title_github_token">パーソナルアクセストークン</string>
+    <string name="link_to_create_token_description_github">トークンを新規作成するためのリンクを開きます。</string>
+    <string name="link_to_create_token_title_github">GitHub設定へのリンク</string>
+
+    <!-- Messages Preferences -->
+    <string name="project_title">プロジェクトを選択</string>
+    <string name="project_default_value_syncing">同期中…</string>
+    <string name="project_default_value_not_selected">選択されていません</string>
+
+    <!-- About Preferences -->
+    <string name="about_how_to_use_app">使い方</string>
+    <string name="about_how_to_use_app_description">1. GitHubのユーザー名を入力します。\n2. GitHubからパーソナルアクセストークンを生成するか、\"%s\"を使用します。\n3. パーソナルアクセストークンを入力します。\n4. \"%s\"をタップしてプロジェクトを選択します。</string>
+    <string name="backlog_widget_btn_add_text">追加</string>
+    <string name="dialog_add_item_edit_text">ここにアイデアを書いてください…</string>
+    <string name="error_it_should_be_replaced">置き換えるべきです</string>
+    <string name="backlog_widget_btnAddItem_desc">エントリーを追加</string>
+    <string name="backlogWidget_emptyView_text">表示するアイテムがありません</string>
+    <string name="backlogWidget_headerProject_text">ヘッダープロジェクトタイトル</string>
+    <string name="dialogAdditem_btnSubmit_desc">送信</string>
+    <string name="dialogAddItem_tvDescription_text">説明</string>
+    <string name="dialogAddItem_projectItemTitle_text">プロジェクト名</string>
+
+    <string name="title_open_source_licenses">オープンソースライセンス</string>
+</resources>
