@@ -9,6 +9,7 @@ import com.isseikz.backlogeditor.GetUserGlobalIdQuery
 import com.isseikz.backlogeditor.data.BacklogItem
 import com.isseikz.backlogeditor.data.BacklogStatus
 import com.isseikz.backlogeditor.data.ProjectInfo
+import com.isseikz.backlogeditor.multiplatformlogger.Logger
 import com.isseikz.backlogeditor.store.SecureTokenStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class GitHubBacklogDataSource(
-    private val secureTokenStorage: SecureTokenStorage
+    private val secureTokenStorage: SecureTokenStorage,
+    private val logger: Logger
 ) : BacklogDataSource, DataSource<ProjectInfo> {
     override suspend fun fetchBacklogItems(): Result<List<ProjectInfo>> {
         val (username, accessToken) = credential
@@ -100,7 +102,7 @@ class GitHubBacklogDataSource(
 
         return client(token).query(GetUserGlobalIdQuery()).execute().let {
             if (it.hasErrors()) {
-                println("it.errors?.firstOrNull()?.message = ${it.errors?.firstOrNull()?.message}")
+                logger.d("it.errors?.firstOrNull()?.message = ${it.errors?.firstOrNull()?.message}")
                 return Result.failure(Exception(it.errors?.firstOrNull()?.message))
             }
             it.data?.viewer?.id
@@ -110,7 +112,7 @@ class GitHubBacklogDataSource(
         }?.execute()
             ?.let {
                 if (it.hasErrors()) {
-                    println("it.errors?.firstOrNull()?.message = ${it.errors?.firstOrNull()?.message}")
+                    logger.d("it.errors?.firstOrNull()?.message = ${it.errors?.firstOrNull()?.message}")
                     Result.failure(Exception(it.errors?.firstOrNull()?.message))
                 } else {
                     it.data?.createProjectV2?.projectV2?.let {newProject ->

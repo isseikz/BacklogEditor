@@ -3,6 +3,7 @@ package com.isseikz.backlogeditor
 import android.content.Context
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.isseikz.backlogeditor.data.PreferenceKey.Companion.PreferenceName
+import com.isseikz.backlogeditor.multiplatformlogger.AndroidLogger
 import com.isseikz.backlogeditor.source.BacklogDataSource
 import com.isseikz.backlogeditor.source.BacklogRepository
 import com.isseikz.backlogeditor.source.GitHubBacklogDataSource
@@ -28,7 +29,7 @@ object Provider_BacklogRepository {
 
     @Provides
     fun provideGitHubBacklogDataSource(secureTokenStorage: SecureTokenStorage): GitHubBacklogDataSource {
-        return GitHubBacklogDataSource(secureTokenStorage)
+        return GitHubBacklogDataSource(secureTokenStorage, AndroidLogger)
     }
 
     @Singleton
@@ -44,7 +45,7 @@ object Provider_BacklogRepository {
             return@create File(context.dataDir, "$PreferenceName.preferences_pb")
         }
         val widgetProjectPreferenceDataStore = WidgetProjectPreferenceWidgetProjectDataStore(dataSource)
-        return WidgetProjectRepository(widgetProjectPreferenceDataStore)
+        return WidgetProjectRepository(widgetProjectPreferenceDataStore, AndroidLogger)
     }
 
     @Singleton

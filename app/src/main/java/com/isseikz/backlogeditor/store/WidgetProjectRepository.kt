@@ -1,5 +1,6 @@
 package com.isseikz.backlogeditor.store
 
+import com.isseikz.backlogeditor.multiplatformlogger.Logger
 import com.isseikz.backlogeditor.source.WidgetProjectDataSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -9,7 +10,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class WidgetProjectRepository(
-    private val widgetProjectPreferenceDataStore: WidgetProjectDataSource
+    private val widgetProjectPreferenceDataStore: WidgetProjectDataSource,
+    private val logger: Logger
 ) {
     val widgetProjectMapFlow: StateFlow<Map<Int, String>>
     private val _widgetProjectMap: MutableStateFlow<Map<Int, String>> = MutableStateFlow(mapOf())
@@ -20,7 +22,7 @@ class WidgetProjectRepository(
 
         scope.launch {
             widgetProjectPreferenceDataStore.preferenceFlow.collect { widgetProjectPreference ->
-                println("widgetProjectPreference: $widgetProjectPreference")
+                logger.d("widgetProjectPreference: $widgetProjectPreference")
                 _widgetProjectMap.value =
                     widgetProjectPreference.associate { it.widgetId to it.projectId }
             }
@@ -28,7 +30,7 @@ class WidgetProjectRepository(
     }
 
     fun create(widgetId: Int, projectId: String) {
-        println("create widgetId: $widgetId, projectId: $projectId")
+        logger.d("create widgetId: $widgetId, projectId: $projectId")
         scope.launch {
             widgetProjectPreferenceDataStore.create(widgetId, projectId)
         }
