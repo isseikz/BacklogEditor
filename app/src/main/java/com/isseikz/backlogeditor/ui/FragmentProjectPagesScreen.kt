@@ -9,7 +9,6 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.isseikz.backlogeditor.R
 import com.isseikz.backlogeditor.source.BacklogRepository
-import com.isseikz.backlogeditor.store.WidgetProjectRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,9 +22,6 @@ import javax.inject.Inject
 class FragmentProjectPagesScreen : Fragment() {
     @Inject
     lateinit var backlogRepository: BacklogRepository
-
-    @Inject
-    lateinit var widgetProjectRepository: WidgetProjectRepository
 
     private lateinit var projectPagesAdapter: ProjectPagesAdapter
     private lateinit var viewPager: androidx.viewpager2.widget.ViewPager2
@@ -47,33 +43,27 @@ class FragmentProjectPagesScreen : Fragment() {
         viewPager.adapter = projectPagesAdapter
 
         val projectId = arguments?.getString(BUNDLE_KEY_PROJECT_ID, "")
-        val page = projectId?.let {
-            backlogRepository.listProjects().indexOfFirst { project ->
-                project.projectId == it
-            }
-        }?.takeIf { it >= 0 } ?: 0
-        Timber.d("page: $page projectId: $projectId")
-        viewPager.currentItem = page
 
         view.findViewById<FloatingActionButton>(R.id.frag_project_page_btn_open_add_item).apply {
             setOnClickListener {
                 val currentPageProject =
                     backlogRepository.listProjects()[viewPager.currentItem].projectId
-                AddItemDialogFragment.newInstance().apply {
-                    arguments = Bundle().apply {
-                        putString(
-                            AddItemDialogFragment.BUNDLE_KEY_PROJECT_ID,
-                            currentPageProject
-                        )
-                    }
-                }
+                AddItemDialogFragment.newInstance(currentPageProject)
                     .show(requireActivity().supportFragmentManager, "AddItemDialogFragment")
             }
         }
 
         scope.launch {
-            backlogRepository.projectsFlow.collect {
-                Timber.d("New projects: $it")
+            backlogRepository.projectsFlow.collect {projects ->
+                Timber.d("New projects: $projects")
+
+                projectId?.let {
+                    backlogRepository.listProjects().indexOfFirst { it.projectId == projectId }
+                }?.takeIf { it >= 0 }?.let {
+                    Timber.d("page: $it projectId: $projectId")
+                    viewPager.currentItem = it
+                }
+
                 withContext(Dispatchers.Main) {
                     projectPagesAdapter.notifyDataSetChanged() // TODO
                 }
@@ -92,15 +82,24 @@ class FragmentProjectPagesScreen : Fragment() {
 
     inner class ProjectPagesAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
         override fun getItemCount(): Int {
+            Timber.d("getItemCount: ${backlogRepository.listProjects().size}")
             return backlogRepository.listProjects().size
         }
 
         override fun createFragment(position: Int): Fragment {
+            Timber.d("createFragment: $position")
             return FragmentProjectPage(backlogRepository.listProjects()[position].projectId)
         }
     }
 
     companion object {
         const val BUNDLE_KEY_PROJECT_ID = "projectId"
+        fun newInstance(projectId: String): FragmentProjectPagesScreen {
+            return FragmentProjectPagesScreen().apply {
+                arguments = Bundle().apply {
+                    putString(BUNDLE_KEY_PROJECT_ID, projectId)
+                }
+            }
+        }
     }
 }

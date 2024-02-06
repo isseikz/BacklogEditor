@@ -3,6 +3,7 @@
 
     <!-- description of the widget -->
     <string name="app_widget_description">Showcasing a project\'s item list with a quick-add button for new entries."</string>
+    <string name="app_widget_text_loading">Loading…</string>
 
     <!-- title of the settings when add new project -->
     <string name="title_activity_settings">%s Settings</string>
@@ -30,7 +31,6 @@
     <string name="error_it_should_be_replaced">IT SHOULD BE REPLACED</string>
     <string name="backlog_widget_btnAddItem_desc">Add entry</string>
     <string name="backlogWidget_emptyView_text">No items to display</string>
-    <string name="backlogWidget_headerProject_text">Header Project Title</string>
     <string name="dialogAdditem_btnSubmit_desc">Submit</string>
     <string name="dialogAddItem_tvDescription_text">Description</string>
     <string name="dialogAddItem_projectItemTitle_text">Project Name</string>

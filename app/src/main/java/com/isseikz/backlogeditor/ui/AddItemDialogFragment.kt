@@ -103,10 +103,13 @@ class AddItemDialogFragment : DialogFragment() {
     }
 
     companion object {
-        fun newInstance(): AddItemDialogFragment {
-            return AddItemDialogFragment()
-        }
-
         const val BUNDLE_KEY_PROJECT_ID = "project_id"
+        fun newInstance(projectId: String): AddItemDialogFragment {
+            return AddItemDialogFragment().apply {
+                arguments = Bundle().apply {
+                    putString(BUNDLE_KEY_PROJECT_ID, projectId)
+                }
+            }
+        }
     }
 }

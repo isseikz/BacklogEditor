@@ -5,8 +5,6 @@ import android.widget.RemoteViews
 import android.widget.RemoteViewsService.RemoteViewsFactory
 import com.isseikz.backlogeditor.source.BacklogRepository
 import com.isseikz.backlogeditor.R
-import com.isseikz.backlogeditor.data.BacklogItem
-import com.isseikz.backlogeditor.store.WidgetProjectRepository
 import timber.log.Timber
 
 class BacklogListRemoteViewsFactory(
@@ -46,7 +44,7 @@ class BacklogListRemoteViewsFactory(
 
     override fun getLoadingView(): RemoteViews {
         Timber.d("getLoadingView")
-        return RemoteViews(context.packageName, R.layout.loading_view)
+        return RemoteViews(context.packageName, R.layout.widget_item_loading)
     }
 
     override fun getViewTypeCount(): Int {

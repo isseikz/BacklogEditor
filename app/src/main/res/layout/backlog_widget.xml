@@ -23,7 +23,7 @@
             android:layout_weight="1"
             android:maxLines="1"
             android:paddingHorizontal="10dp"
-            android:text="@string/backlogWidget_headerProject_text"
+            android:text="@string/app_widget_text_loading"
             android:textColor="?attr/colorOnPrimary" />
     </LinearLayout>
 

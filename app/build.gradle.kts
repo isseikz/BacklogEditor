@@ -15,8 +15,8 @@ android {
         applicationId = "com.isseikz.backlogeditor"
         minSdk = 31
         targetSdk = 34
-        versionCode = 8
-        versionName = "1.0.8"
+        versionCode = 10
+        versionName = "1.0.10"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

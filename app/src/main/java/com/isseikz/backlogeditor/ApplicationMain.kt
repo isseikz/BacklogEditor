@@ -4,10 +4,12 @@ import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.isseikz.backlogeditor.source.BacklogRepository
+import com.isseikz.backlogeditor.widget.BacklogAppWidget
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -32,7 +34,11 @@ class ApplicationMain: Application(), Configuration.Provider  {
         Timber.d("onCreate")
 
         CoroutineScope(Dispatchers.IO).launch {
-            backlogRepository.syncBacklogItems()
+            backlogRepository.projectsAvailabilityFlow.collect {
+                withContext(Dispatchers.Main) {
+                    BacklogAppWidget.requestUpdate(this@ApplicationMain)
+                }
+            }
         }
     }
 }
