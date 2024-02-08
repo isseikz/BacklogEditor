@@ -5,9 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DiffUtil
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.isseikz.backlogeditor.R
+import com.isseikz.backlogeditor.data.ProjectInfo
 import com.isseikz.backlogeditor.source.BacklogRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -38,11 +41,20 @@ class FragmentProjectPagesScreen : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        projectPagesAdapter = ProjectPagesAdapter(this)
+        var projectId = arguments?.getString(BUNDLE_KEY_PROJECT_ID)
+
+        projectPagesAdapter = ProjectPagesAdapter(this, ProjectItemDiffCallback())
         viewPager = view.findViewById(R.id.project_items_pager)
         viewPager.adapter = projectPagesAdapter
+        viewPager.registerOnPageChangeCallback(object :
+            androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                Timber.d("onPageSelected: $position")
+                projectId = backlogRepository.listProjects()[position].projectId
+            }
+        })
 
-        val projectId = arguments?.getString(BUNDLE_KEY_PROJECT_ID, "")
 
         view.findViewById<FloatingActionButton>(R.id.frag_project_page_btn_open_add_item).apply {
             setOnClickListener {
@@ -53,19 +65,19 @@ class FragmentProjectPagesScreen : Fragment() {
             }
         }
 
-        scope.launch {
-            backlogRepository.projectsFlow.collect {projects ->
+        lifecycleScope.launch {
+            backlogRepository.projectsFlow.collect { projects ->
                 Timber.d("New projects: $projects")
 
-                projectId?.let {
-                    backlogRepository.listProjects().indexOfFirst { it.projectId == projectId }
+                projectId?.let { id ->
+                    projects.values.indexOfFirst { it.projectId == id }
                 }?.takeIf { it >= 0 }?.let {
                     Timber.d("page: $it projectId: $projectId")
                     viewPager.currentItem = it
                 }
 
                 withContext(Dispatchers.Main) {
-                    projectPagesAdapter.notifyDataSetChanged() // TODO
+                    projectPagesAdapter.updateItems(projects.values.toList())
                 }
             }
         }
@@ -80,15 +92,58 @@ class FragmentProjectPagesScreen : Fragment() {
         }
     }
 
-    inner class ProjectPagesAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
+    inner class ProjectPagesAdapter(
+        fragment: Fragment,
+        private val diffCallback: DiffUtil.ItemCallback<ProjectInfo>
+    ) : FragmentStateAdapter(fragment) {
+        private var items = listOf<ProjectInfo>()
+
+        fun updateItems(newItems: List<ProjectInfo>) {
+            val diffResult = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+                override fun getOldListSize(): Int = items.size
+
+                override fun getNewListSize(): Int = newItems.size
+
+                override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                    return diffCallback.areItemsTheSame(
+                        items[oldItemPosition],
+                        newItems[newItemPosition]
+                    )
+                }
+
+                override fun areContentsTheSame(
+                    oldItemPosition: Int,
+                    newItemPosition: Int
+                ): Boolean {
+                    return diffCallback.areContentsTheSame(
+                        items[oldItemPosition],
+                        newItems[newItemPosition]
+                    )
+                }
+            })
+
+            items = newItems
+            diffResult.dispatchUpdatesTo(this)
+        }
+
         override fun getItemCount(): Int {
             Timber.d("getItemCount: ${backlogRepository.listProjects().size}")
-            return backlogRepository.listProjects().size
+            return items.size
         }
 
         override fun createFragment(position: Int): Fragment {
             Timber.d("createFragment: $position")
-            return FragmentProjectPage(backlogRepository.listProjects()[position].projectId)
+            return FragmentProjectPage(items[position].projectId)
+        }
+    }
+
+    class ProjectItemDiffCallback : DiffUtil.ItemCallback<ProjectInfo>() {
+        override fun areItemsTheSame(oldItem: ProjectInfo, newItem: ProjectInfo): Boolean {
+            return oldItem.projectId == newItem.projectId
+        }
+
+        override fun areContentsTheSame(oldItem: ProjectInfo, newItem: ProjectInfo): Boolean {
+            return oldItem == newItem
         }
     }
 
