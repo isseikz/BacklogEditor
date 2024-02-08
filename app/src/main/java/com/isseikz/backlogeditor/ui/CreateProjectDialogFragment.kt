@@ -79,7 +79,7 @@ class CreateProjectDialogFragment : DialogFragment() {
                             withContext(Dispatchers.Main) {
                                 Toast.makeText(
                                     requireContext(),
-                                    "New project created",
+                                    getString(R.string.toast_project_created),
                                     Toast.LENGTH_SHORT
                                 ).show()
                                 editText.setText("")
