@@ -4,6 +4,8 @@ import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.ApolloResponse
 import com.isseikz.backlogeditor.AddDraftMutation
 import com.isseikz.backlogeditor.AddUserProjectMutation
+import com.isseikz.backlogeditor.BuildConfig
+import com.isseikz.backlogeditor.GetBacklogItemsQuery
 import com.isseikz.backlogeditor.GetProjectsQuery
 import com.isseikz.backlogeditor.GetUserGlobalIdQuery
 import com.isseikz.backlogeditor.data.BacklogItem
@@ -21,6 +23,13 @@ class GitHubBacklogDataSource(
     private val logger: Logger
 ) : BacklogDataSource, DataSource<ProjectInfo> {
     override suspend fun fetchBacklogItems(): Result<List<ProjectInfo>> {
+        logger.d("fetchBacklogItems")
+        if (BuildConfig.DEBUG) {
+            val stackTrace = Exception().stackTrace
+            stackTrace.forEach {
+                logger.d("at $it")
+            }
+        }
         val (username, accessToken) = credential
             ?: return Result.failure(Exception("Credential not found"))
 
@@ -57,6 +66,44 @@ class GitHubBacklogDataSource(
         }
     }
 
+    override suspend fun fetchBacklogItems(projectId: String): Result<ProjectInfo> {
+        logger.d("fetchSingleBacklogItem")
+        if (BuildConfig.DEBUG) {
+            val stackTrace = Exception().stackTrace
+            stackTrace.forEach {
+                logger.d("at $it")
+            }
+        }
+        val (_, accessToken) = credential
+            ?: return Result.failure(Exception("Credential not found"))
+
+        val response: ApolloResponse<GetBacklogItemsQuery.Data> = client(accessToken)
+            .query(GetBacklogItemsQuery(projectId))
+            .execute()
+
+        return if (response.hasErrors()) {
+            Result.failure(Exception(response.errors?.firstOrNull()?.message))
+        } else {
+
+            val projectItems = response.data?.node?.onProjectV2?.items?.nodes
+            Result.success(
+                ProjectInfo(
+                    projectId = projectId,
+                    projectName = response.data?.node?.onProjectV2?.title ?: "",
+                    items = projectItems?.mapIndexedNotNull { index, item ->
+                        val projectItem = item?.onProjectV2Item
+                        BacklogItem(
+                            id = projectItem?.id ?: "",
+                            title = projectItem?.content?.title ?: "",
+                            status = projectItem?.content?.status ?: BacklogStatus.TODO,
+                            priority = index
+                        )
+                    } ?: emptyList()
+                )
+            )
+        }
+    }
+
     override suspend fun addBacklogItem(projectId: String, title: String): Result<Unit> {
         val accessToken = secureTokenStorage.getAccessToken()
 
@@ -90,6 +137,19 @@ class GitHubBacklogDataSource(
             else -> BacklogStatus.TODO // onDraftIssue
         }
 
+    val GetBacklogItemsQuery.Content.title: String
+        get() = onDraftIssue?.title ?: onIssue?.title ?: onPullRequest?.title ?: ""
+
+    val GetBacklogItemsQuery.Content.closed: Boolean
+        get() = onIssue?.closed ?: onPullRequest?.closed ?: false
+
+    val GetBacklogItemsQuery.Content.status: BacklogStatus
+        get() = when {
+            onIssue?.closed == true || onPullRequest?.closed == true -> BacklogStatus.DONE
+            onIssue?.closed == false && onPullRequest?.closed == false -> BacklogStatus.IN_PROGRESS
+            else -> BacklogStatus.TODO // onDraftIssue
+        }
+
     override val name: String
         get() = "github"
     override val dataFlow: StateFlow<List<ProjectInfo>>
@@ -97,7 +157,7 @@ class GitHubBacklogDataSource(
     private val _projectsFlow = MutableStateFlow<List<ProjectInfo>>(listOf())
 
     override suspend fun create(data: ProjectInfo): Result<Unit> {
-        val (username, token) = credential
+        val (_, token) = credential
             ?: return Result.failure(Exception("Credential not found"))
 
         return client(token).query(GetUserGlobalIdQuery()).execute().let {

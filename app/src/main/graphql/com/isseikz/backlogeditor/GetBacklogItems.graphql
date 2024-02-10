@@ -1,13 +1,28 @@
-query GetBacklogItems($projectName: String!) {
-  repository(owner: "owner", name: $projectName) {
-    issues(states: OPEN, first: 100) {
-      nodes {
-        title
-        body
-        url
-        labels(first: 5) {
-          nodes {
-            name
+# Find project items by project id.
+query GetBacklogItems($projectId: ID!) {
+  node(id: $projectId) {
+    ... on ProjectV2 {
+      title
+      shortDescription
+      readme
+      id
+      items(first: 10) {
+        nodes {
+          ... on ProjectV2Item {
+            id
+            content {
+              ... on DraftIssue {
+                title
+              }
+              ... on Issue {
+                title
+                closed
+              }
+              ... on PullRequest {
+                title
+                closed
+              }
+            }
           }
         }
       }

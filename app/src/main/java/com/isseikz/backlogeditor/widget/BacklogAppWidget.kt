@@ -12,11 +12,14 @@ import android.widget.RemoteViews
 import androidx.work.WorkManager
 import com.isseikz.backlogeditor.R
 import com.isseikz.backlogeditor.RefreshItemsReceiver
-import com.isseikz.backlogeditor.SyncDataWorker
 import com.isseikz.backlogeditor.source.BacklogRepository
 import com.isseikz.backlogeditor.store.WidgetProjectRepository
 import com.isseikz.backlogeditor.ui.AddItemDialogActivity
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -24,8 +27,10 @@ import javax.inject.Inject
 class BacklogAppWidget : AppWidgetProvider() {
     @Inject
     lateinit var widgetProjectRepository: WidgetProjectRepository
+
     @Inject
     lateinit var backlogRepository: BacklogRepository
+    private val scope = CoroutineScope(Dispatchers.IO)
 
     override fun onUpdate(
         context: Context,
@@ -33,10 +38,6 @@ class BacklogAppWidget : AppWidgetProvider() {
         appWidgetIds: IntArray
     ) {
         Timber.d("onUpdate")
-        if (System.currentTimeMillis() - backlogRepository.lastUpdated > 60_000L) {
-            // when the app is installed (`lastUpdated = 0L`), or 60sec after the last sync
-            SyncDataWorker.requestOneTimeSync(context)
-        }
         updateWidget(context, appWidgetManager, appWidgetIds)
         super.onUpdate(context, appWidgetManager, appWidgetIds)
     }
@@ -50,7 +51,7 @@ class BacklogAppWidget : AppWidgetProvider() {
         Timber.d("onAppWidgetOptionsChanged $appWidgetId, $newOptions")
         super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions)
         widgetProjectRepository.widgetProjectMapFlow.value[appWidgetId]?.let {
-            updateSingleWidget(context, appWidgetManager, appWidgetId, it)
+            scope.launch { updateSingleWidget(context, appWidgetManager, appWidgetId, it) }
         }
     }
 
@@ -69,25 +70,28 @@ class BacklogAppWidget : AppWidgetProvider() {
         appWidgetIds: IntArray
     ) {
         Timber.d("updateWidget ${appWidgetIds.joinToString(", ")}   ${this.hashCode()}")
-        widgetProjectRepository.widgetProjectMapFlow.value.let {
-            it.filterKeys { widgetId -> appWidgetIds.contains(widgetId) }
-                .forEach { (widgetId, projectId) ->
-                    updateSingleWidget(context, appWidgetManager, widgetId, projectId)
-                }
+        scope.launch {
+            widgetProjectRepository.widgetProjectMapFlow.collect {
+                it.filterKeys { widgetId -> appWidgetIds.contains(widgetId) }
+                    .forEach { (widgetId, projectId) ->
+                        updateSingleWidget(context, appWidgetManager, widgetId, projectId)
+                    }
+            }
         }
     }
 
-    private fun updateSingleWidget(
+    private suspend fun updateSingleWidget(
         context: Context,
         appWidgetManager: AppWidgetManager,
         appWidgetId: Int,
         projectId: String
-    ) {
+    ) = withContext(Dispatchers.IO) {
         Timber.d("updateSingleWidget $projectId")
+        backlogRepository.syncBacklogItems(projectId)
 
         val project = backlogRepository.getProjectInfo(projectId) ?: run {
             Timber.w("project is null with project $projectId")
-            return
+            return@withContext
         }
 
         val intent = Intent(context, BacklogListRemoteViewsService::class.java).apply {
@@ -121,7 +125,9 @@ class BacklogAppWidget : AppWidgetProvider() {
             )
             setOnClickPendingIntent(R.id.buttonRefreshItem, refreshPendingIntent)
         }
-        appWidgetManager.updateAppWidget(appWidgetId, views)
+        withContext(Dispatchers.Main) {
+            appWidgetManager.updateAppWidget(appWidgetId, views)
+        }
     }
 
     companion object {

@@ -47,14 +47,17 @@ class BacklogRepository(
         _projectsAvailabilityFlow.update { _ -> false }
         backlogDataSources.forEach {
             it.fetchBacklogItems().getOrNull()?.forEach { newInfo ->
-                _projects[newInfo.projectId] = newInfo
-                _projectsFlow.update { oldProjects ->
-                    oldProjects.toMutableMap().apply {
-                        this[newInfo.projectId] = newInfo
-                    }.toMap()
-                }
-                _lastUpdated = System.currentTimeMillis()
-                _projectsAvailabilityFlow.update { _ -> true }
+                updateProjectInfo(newInfo)
+            } ?: run {
+                _projectsAvailabilityFlow.update { _ -> false }
+            }
+        }
+    }
+
+    suspend fun syncBacklogItems(projectId: String) {
+        backlogDataSources.forEach {
+            it.fetchBacklogItems(projectId).getOrNull()?.let { newInfo ->
+                updateProjectInfo(newInfo)
             } ?: run {
                 _projectsAvailabilityFlow.update { _ -> false }
             }
@@ -81,5 +84,16 @@ class BacklogRepository(
         }
 
         return result.isSuccess
+    }
+
+    private fun updateProjectInfo(newInfo: ProjectInfo) {
+        _projects[newInfo.projectId] = newInfo
+        _projectsFlow.update { oldProjects ->
+            oldProjects.toMutableMap().apply {
+                this[newInfo.projectId] = newInfo
+            }.toMap()
+        }
+        _lastUpdated = System.currentTimeMillis()
+        _projectsAvailabilityFlow.update { _ -> true }
     }
 }
