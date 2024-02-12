@@ -38,4 +38,5 @@
 
     <!-- Creating a new project   -->
     <string name="toast_project_created">このプロジェクトを選択するには、再度ウィジェットを配置してください。</string>
+    <string name="preference_title_filter_status">表示するステータス</string>
 </resources>

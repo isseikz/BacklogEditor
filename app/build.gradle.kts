@@ -5,6 +5,7 @@ plugins {
     id("com.apollographql.apollo3")
     kotlin("kapt")
     id("com.google.dagger.hilt.android")
+    kotlin("plugin.serialization") version "1.9.22"
 }
 
 android {
@@ -76,6 +77,7 @@ dependencies {
 
     implementation("androidx.datastore:datastore:1.0.0")
     implementation("com.google.android.gms:play-services-oss-licenses:17.0.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
 }
 

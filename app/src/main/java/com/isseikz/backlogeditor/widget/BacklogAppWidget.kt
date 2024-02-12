@@ -6,12 +6,12 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.widget.RemoteViews
 import androidx.work.WorkManager
 import com.isseikz.backlogeditor.R
 import com.isseikz.backlogeditor.RefreshItemsReceiver
+import com.isseikz.backlogeditor.data.WidgetProjectPreference
 import com.isseikz.backlogeditor.source.BacklogRepository
 import com.isseikz.backlogeditor.store.WidgetProjectRepository
 import com.isseikz.backlogeditor.ui.AddItemDialogActivity
@@ -51,7 +51,7 @@ class BacklogAppWidget : AppWidgetProvider() {
         Timber.d("onAppWidgetOptionsChanged $appWidgetId, $newOptions")
         super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions)
         widgetProjectRepository.widgetProjectMapFlow.value[appWidgetId]?.let {
-            scope.launch { updateSingleWidget(context, appWidgetManager, appWidgetId, it) }
+            scope.launch { updateSingleWidget(context, appWidgetManager, it) }
         }
     }
 
@@ -73,8 +73,8 @@ class BacklogAppWidget : AppWidgetProvider() {
         scope.launch {
             widgetProjectRepository.widgetProjectMapFlow.collect {
                 it.filterKeys { widgetId -> appWidgetIds.contains(widgetId) }
-                    .forEach { (widgetId, projectId) ->
-                        updateSingleWidget(context, appWidgetManager, widgetId, projectId)
+                    .forEach { (_, preference) ->
+                        updateSingleWidget(context, appWidgetManager, preference)
                     }
             }
         }
@@ -83,24 +83,23 @@ class BacklogAppWidget : AppWidgetProvider() {
     private suspend fun updateSingleWidget(
         context: Context,
         appWidgetManager: AppWidgetManager,
-        appWidgetId: Int,
-        projectId: String
+        preference: WidgetProjectPreference
     ) = withContext(Dispatchers.IO) {
-        Timber.d("updateSingleWidget $projectId")
-        backlogRepository.syncBacklogItems(projectId)
+        Timber.d("updateSingleWidget ${preference.projectId}")
+        backlogRepository.syncBacklogItems(preference.projectId)
 
-        val project = backlogRepository.getProjectInfo(projectId) ?: run {
-            Timber.w("project is null with project $projectId")
+        val project = backlogRepository.getProjectInfo(preference.projectId) ?: run {
+            Timber.w("project is null with project ${preference.projectId}")
             return@withContext
         }
 
-        val intent = Intent(context, BacklogListRemoteViewsService::class.java).apply {
-            putExtra(BacklogListRemoteViewsService.EXTRA_PROJECT_ID, project.projectId)
-            data = Uri.fromParts("content", project.projectId, null)
-        }
-
+        val intent = BacklogListRemoteViewsService.createIntent(
+            context,
+            project.projectId,
+            preference.statusFilter
+        )
         val projectName = project.projectName
-        Timber.d("[$projectId] ${project.items.size} projectName: $projectName")
+        Timber.d("[${preference.projectId}] ${project.items.size} projectName: $projectName")
 
         val views = RemoteViews(context.packageName, R.layout.backlog_widget).apply {
             setRemoteAdapter(R.id.listViewProjects, intent)
@@ -109,8 +108,8 @@ class BacklogAppWidget : AppWidgetProvider() {
 
             val addItemPendingIntent = PendingIntent.getActivity(
                 context,
-                appWidgetId,
-                AddItemDialogActivity.createIntent(context, projectId).apply {
+                preference.widgetId,
+                AddItemDialogActivity.createIntent(context, preference.projectId).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 },
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
@@ -119,14 +118,14 @@ class BacklogAppWidget : AppWidgetProvider() {
 
             val refreshPendingIntent = PendingIntent.getBroadcast(
                 context,
-                appWidgetId,
+                preference.widgetId,
                 RefreshItemsReceiver.createIntent(context),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
             setOnClickPendingIntent(R.id.buttonRefreshItem, refreshPendingIntent)
         }
         withContext(Dispatchers.Main) {
-            appWidgetManager.updateAppWidget(appWidgetId, views)
+            appWidgetManager.updateAppWidget(preference.widgetId, views)
         }
     }
 

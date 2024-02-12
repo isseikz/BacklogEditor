@@ -21,6 +21,14 @@
             app:title="@string/project_title"
             app:useSimpleSummaryProvider="true" />
 
+        <MultiSelectListPreference
+            android:defaultValue="@array/empty_array"
+            android:dependency="@string/preference_key_github_pat"
+            android:entries="@array/empty_array"
+            android:entryValues="@array/empty_array"
+            android:key="@string/preference_key_filter_status"
+            android:title="@string/preference_title_filter_status" />
+
         <Preference
             app:key="webpage_create_token"
             app:summary="@string/link_to_create_token_description_github"
@@ -54,7 +62,7 @@
         </Preference>
 
         <Preference
-            app:key="link_to_privacy_policy"
+            app:key="link_to_terms_and_conditions"
             app:title="Terms &amp; Conditions" >
             <intent
                 android:action="android.intent.action.VIEW"

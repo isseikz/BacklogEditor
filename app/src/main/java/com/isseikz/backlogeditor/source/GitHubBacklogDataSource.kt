@@ -49,7 +49,8 @@ class GitHubBacklogDataSource(
                     BacklogItem(
                         id = projectItem?.id ?: "",
                         title = projectItem?.content?.title ?: "",
-                        status = projectItem?.content?.status ?: BacklogStatus.TODO,
+                        status = projectItem?.backlogStatus ?: projectItem?.content?.status
+                        ?: BacklogStatus.TODO,
                         priority = index
                     )
                 }
@@ -95,7 +96,8 @@ class GitHubBacklogDataSource(
                         BacklogItem(
                             id = projectItem?.id ?: "",
                             title = projectItem?.content?.title ?: "",
-                            status = projectItem?.content?.status ?: BacklogStatus.TODO,
+                            status = projectItem?.backlogStatus ?: projectItem?.content?.status
+                            ?: BacklogStatus.TODO,
                             priority = index
                         )
                     } ?: emptyList()
@@ -127,6 +129,13 @@ class GitHubBacklogDataSource(
     val GetProjectsQuery.Content.title: String
         get() = onDraftIssue?.title ?: onIssue?.title ?: onPullRequest?.title ?: ""
 
+    private val GetProjectsQuery.OnProjectV2Item.backlogStatus: BacklogStatus
+        get() = when (status?.onProjectV2ItemFieldSingleSelectValue?.name) {
+            "Todo" -> BacklogStatus.TODO
+            "In Progress" -> BacklogStatus.IN_PROGRESS
+            "Done" -> BacklogStatus.DONE
+            else -> BacklogStatus.TODO // null
+        }
     val GetProjectsQuery.Content.closed: Boolean
         get() = onIssue?.closed ?: onPullRequest?.closed ?: false
 
@@ -143,6 +152,13 @@ class GitHubBacklogDataSource(
     val GetBacklogItemsQuery.Content.closed: Boolean
         get() = onIssue?.closed ?: onPullRequest?.closed ?: false
 
+    private val GetBacklogItemsQuery.OnProjectV2Item.backlogStatus: BacklogStatus
+        get() = when (status?.onProjectV2ItemFieldSingleSelectValue?.name) {
+            "Todo" -> BacklogStatus.TODO
+            "In Progress" -> BacklogStatus.IN_PROGRESS
+            "Done" -> BacklogStatus.DONE
+            else -> BacklogStatus.TODO // null
+        }
     val GetBacklogItemsQuery.Content.status: BacklogStatus
         get() = when {
             onIssue?.closed == true || onPullRequest?.closed == true -> BacklogStatus.DONE

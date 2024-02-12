@@ -45,4 +45,12 @@ class SecureTokenStorage(private val context: Context) : PreferenceDataStore() {
     override fun getString(key: String?, defValue: String?): String? {
         return sharedPreferences.getString(key, defValue)
     }
+
+    override fun putStringSet(key: String?, values: MutableSet<String>?) {
+        sharedPreferences.edit().putStringSet(key, values).apply()
+    }
+
+    override fun getStringSet(key: String?, defValues: MutableSet<String>?): MutableSet<String>? {
+        return sharedPreferences.getStringSet(key, defValues)
+    }
 }

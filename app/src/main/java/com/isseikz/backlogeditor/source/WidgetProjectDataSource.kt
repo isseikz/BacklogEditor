@@ -5,6 +5,10 @@ import kotlinx.coroutines.flow.Flow
 
 interface WidgetProjectDataSource {
     val preferenceFlow: Flow<List<WidgetProjectPreference>>
-    suspend fun create(widgetId: Int, projectId: String)
+    suspend fun create(
+        widgetId: Int,
+        preference: WidgetProjectPreference
+    )
+
     suspend fun delete(widgetId: Int)
 }

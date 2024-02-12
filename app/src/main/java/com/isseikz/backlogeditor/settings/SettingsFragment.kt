@@ -6,10 +6,13 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
+import androidx.preference.MultiSelectListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.isseikz.backlogeditor.R
 import com.isseikz.backlogeditor.SyncDataWorker
+import com.isseikz.backlogeditor.data.BacklogStatus
+import com.isseikz.backlogeditor.data.WidgetProjectPreference
 import com.isseikz.backlogeditor.source.BacklogRepository
 import com.isseikz.backlogeditor.store.SecureTokenStorage
 import com.isseikz.backlogeditor.store.WidgetProjectRepository
@@ -34,7 +37,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     lateinit var widgetProjectRepository: WidgetProjectRepository
 
     private val selectedProjectName: String
-        get() = widgetProjectRepository.widgetProjectMapFlow.value[widgetId] ?: ""
+        get() = widgetProjectRepository.widgetProjectMapFlow.value[widgetId]?.projectId ?: ""
 
 
     private val scope = CoroutineScope(Dispatchers.IO)
@@ -45,10 +48,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
         )
             ?: AppWidgetManager.INVALID_APPWIDGET_ID
     }
+    private var preferenceBuilder = WidgetProjectPreference.Builder()
+    private lateinit var prefProject: ListPreference
+    private lateinit var statusPreference: MultiSelectListPreference
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         preferenceManager.preferenceDataStore = secureTokenStorage
-
 
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
 
@@ -58,20 +63,26 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val perfUsername = findPreference<EditTextPreference>(
             getString(R.string.preference_key_github_username)
         )
-        val prefProject =
-            findPreference<ListPreference>(getString(R.string.preference_key_github_project))
 
-        if (prefToken == null || perfUsername == null || prefProject == null) {
-            Timber.w("prefToken or perfUsername or prefProject is null")
+        findPreference<ListPreference>(getString(R.string.preference_key_github_project))?.let {
+            prefProject = it
+        }
+
+        findPreference<MultiSelectListPreference>(getString(R.string.preference_key_filter_status))?.let {
+            statusPreference = it
+        }
+
+        if (prefToken == null || perfUsername == null) {
+            Timber.w("prefToken or perfUsername or prefProject or prefFilterStatus is null")
             return
         }
 
         prefToken.setOnPreferenceChangeListener { _, _ ->
-                scope.launch {
-                    backlogRepository.syncBacklogItems()
-                }
-                true
+            scope.launch {
+                backlogRepository.syncBacklogItems()
             }
+            true
+        }
 
         prefProject.apply {
             // update projects when the preference is clicked
@@ -107,7 +118,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
                         return@setOnPreferenceChangeListener false
                     }
-                    widgetProjectRepository.create(widgetId, projectId)
+                    preferenceBuilder.projectId(projectId)
                     // register app widget into home screen
                     registerAppWidget()
                     true
@@ -124,6 +135,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 prefProject.entryValues = emptyArray()
                 true
             }
+        }
+
+        statusPreference.apply {
+            entries = BacklogStatus.entries.map { it.displayName }.toTypedArray()
+            entryValues = BacklogStatus.entries.map { it.name }.toTypedArray()
         }
 
         String.format(
@@ -146,9 +162,23 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 withContext(Dispatchers.Main) {
                     prefProject?.setDefaultValue(defaultValue)
                     prefProject?.isSelectable = available
+                    statusPreference.isSelectable = available
                 }
             }
         }
+    }
+
+    override fun onStop() {
+        saveSettings()
+        super.onStop()
+    }
+
+    private fun saveSettings() {
+        preferenceBuilder.apply {
+            widgetId(widgetId)
+            projectId(prefProject.value)
+            statusFilter(statusPreference.values.map { BacklogStatus.valueOf(it) }.toSet())
+        }.build().let { widgetProjectRepository.create(widgetId, it)}
     }
 
     private fun registerAppWidget() {

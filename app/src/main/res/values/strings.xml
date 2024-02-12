@@ -37,6 +37,8 @@
     <string name="preference_key_github_username" translatable="false">github_username</string>
     <string name="preference_key_github_pat" translatable="false">personal_access_token</string>
     <string name="preference_key_github_project" translatable="false">project</string>
+    <string name="preference_key_filter_status" translatable="false">filter_status</string>
+    <string name="preference_title_filter_status">Filter by status</string>
 
     <string name="title_open_source_licenses">Open Source Licenses</string>
 

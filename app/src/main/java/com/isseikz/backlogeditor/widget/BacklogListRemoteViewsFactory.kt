@@ -3,16 +3,20 @@ package com.isseikz.backlogeditor.widget
 import android.content.Context
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService.RemoteViewsFactory
-import com.isseikz.backlogeditor.source.BacklogRepository
 import com.isseikz.backlogeditor.R
+import com.isseikz.backlogeditor.data.BacklogItem
+import com.isseikz.backlogeditor.data.BacklogStatus
+import com.isseikz.backlogeditor.source.BacklogRepository
 import timber.log.Timber
 
 class BacklogListRemoteViewsFactory(
     private val context: Context,
     private val backlogRepository: BacklogRepository,
-    private val projectId: String
+    private val projectId: String,
+    private val filterStatus: Set<BacklogStatus>
 ) : RemoteViewsFactory {
-    private var projectItems = backlogRepository.getProjectInfo(projectId)?.items ?: emptyList()
+    private var projectItems =
+        backlogRepository.getProjectInfo(projectId)?.items?.filterByStatus() ?: emptyList()
 
     override fun onCreate() {
         Timber.d("onCreate (projectId: $projectId)")
@@ -20,7 +24,8 @@ class BacklogListRemoteViewsFactory(
 
     override fun onDataSetChanged() {
         Timber.d("onDataSetChanged (projectId: $projectId)")
-        projectItems = backlogRepository.getProjectInfo(projectId)?.items ?: emptyList()
+        projectItems =
+            backlogRepository.getProjectInfo(projectId)?.items?.filterByStatus() ?: emptyList()
         Timber.d("projectItems of ${projectItems.size}")
     }
 
@@ -62,6 +67,11 @@ class BacklogListRemoteViewsFactory(
         Timber.d("hasStableIds")
         // Return whether the same ID always refers to the same object
         return true
+    }
+
+    private fun List<BacklogItem>.filterByStatus(): List<BacklogItem> {
+        Timber.d("Filter by $filterStatus")
+        return this.filter { filterStatus.contains(it.status) }
     }
 
     data class ProjectItem(val name: String) // Placeholder data class
